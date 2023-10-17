@@ -13,13 +13,14 @@ public class Game {
     private Scanner scanner = new Scanner(System.in);
     private Random random = new Random();
     private int randomNum = random.nextInt(100) + 1;
-    private List<Integer> score = new ArrayList<>();
+    private List<ScoreEntry> lowScoreList = new ArrayList<>();
     
     
 
     private boolean gamePlay = true;
     private int playerGuess;
     private int tryCount = 0;
+    private int maxGuesses = 5;
     private int gissning = 1;    
 
 
@@ -29,7 +30,7 @@ public class Game {
 
         System.out.println("Välkommen till gissa talet!");
         System.out.println("Gissa ett tal mellan 1 och 100: ");
-
+        System.out.println(randomNum);
         while (gamePlay) {
             try {
                 playerGuess = scanner.nextInt();
@@ -41,10 +42,34 @@ public class Game {
                 if (playerGuess == randomNum) {
                     System.out.println("\nGrattis du gissade rätt!\n");
                     gamePlay = false;
-                    score.add(tryCount);
-                    Collections.sort(score);
-                    if (score.size() > 5) {
-                        score.remove(score.size() - 1);
+
+                    boolean saveScore = false;
+                    while (true) {
+                        System.out.println("Vill du spara ditt score? (Ja/Nej)");
+                        String choice = scanner.next().toLowerCase();
+                        if (choice.equals("ja")) {
+                            saveScore = true;
+                            break;
+                        } else if (choice.equals("nej")) {
+                            break;
+                        } else {
+                            System.out.println("Ogiltigt val. Mata in Ja eller Nej.");
+                        }
+                    }
+
+                    System.out.println("Ange ditt namn för att spara ditt score: ");
+                    String playerName = scanner.next();
+                    ScoreEntry entry = new ScoreEntry(tryCount, playerName);
+                    lowScoreList.add(entry);
+                
+                    Collections.sort(lowScoreList, (a, b) -> a.getScore() - b.getScore());
+
+                    if (lowScoreList.size() > maxGuesses) {
+                        lowScoreList.remove(lowScoreList.size() - 1);
+                    }
+
+                    if (saveScore) {
+                        saveScore(tryCount);
                     }
                     displayMenu();
                 } 
@@ -72,6 +97,7 @@ public class Game {
     private void startNewGame() {
         randomNum = random.nextInt(100) + 1;
         System.out.println("Gissa ett tal mellan 1 och 100: ");
+        System.out.println(randomNum );
         gamePlay = true;
         tryCount = 0;
         gissning = 1;
@@ -89,11 +115,22 @@ public class Game {
             break;
 
         } else if (choice == 3) {
-            System.out.println("Ditt score är: " + score + "\n");
+            System.out.println("Ditt score är: ");
+            for (ScoreEntry entry : lowScoreList) {
+                System.out.println(entry.getName() + " " + entry.getScore());
+            }
+            System.out.println();
             displayMenu();
             break;
         }
     }
 
 }
+
+    private void saveScore(int score) {
+        if (lowScoreList.size() < maxGuesses || score < lowScoreList.get(maxGuesses - 1).getScore()) {
+            System.out.println("Ditt score har sparats!");
+        } else {
+            System.out.println("Tyvärr, ditt score var inte tillräckligt bra för att sparas.");}
+    }
 }
